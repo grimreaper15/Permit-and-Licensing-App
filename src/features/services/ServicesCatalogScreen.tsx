@@ -166,7 +166,7 @@ const SERVICES_CATALOG: ServiceCatalogItem[] = [
     iconColor: '#4338CA',
     badgeLabel: 'OCCUPANCY',
     badgeVariant: 'info',
-    route: '/housing',
+    route: '/permit-and-licensing',
   },
   {
     id: 'SVC-HOU-REV',
@@ -178,7 +178,7 @@ const SERVICES_CATALOG: ServiceCatalogItem[] = [
     iconColor: '#475569',
     badgeLabel: 'BUILDING REVIEW',
     badgeVariant: 'neutral',
-    route: '/housing',
+    route: '/permit-and-licensing',
   },
 
   // 3. TRANSPORT & MOBILITY SERVICES
@@ -216,7 +216,7 @@ const SERVICES_CATALOG: ServiceCatalogItem[] = [
     iconColor: '#B45309',
     badgeLabel: 'TODA FRANCHISE',
     badgeVariant: 'warning',
-    route: '/transport',
+    route: '/permit-and-licensing',
   },
   {
     id: 'SVC-TRN-TKT',
@@ -340,7 +340,7 @@ const SERVICES_CATALOG: ServiceCatalogItem[] = [
     iconColor: '#4338CA',
     badgeLabel: 'FAST-TRACK',
     badgeVariant: 'info',
-    route: '/(tabs)/tracker',
+    route: '/permit-and-licensing',
   },
   {
     id: 'SVC-RPT',
