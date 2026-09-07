@@ -87,6 +87,19 @@ export default function PermitDashboardScreen() {
         {/* Quick Action Navigation Grid */}
         <View style={styles.actionGrid}>
           <TouchableOpacity
+            style={[styles.actionCard, { backgroundColor: colors.accent, borderColor: colors.accent }]}
+            onPress={() => router.push('/permit-and-licensing/apply' as any)}
+            activeOpacity={0.85}>
+            <View style={[styles.actionIconCircle, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
+              <IconSymbol name="plus.circle.fill" size={20} color="#FFFFFF" />
+            </View>
+            <Text style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>Apply Permit</Text>
+            <Text style={[styles.actionCardDesc, { color: '#E0F2FE' }]}>
+              New BPLO application
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
             onPress={() => router.push('/permit-and-licensing/applications' as any)}
             activeOpacity={0.8}>
@@ -187,30 +200,34 @@ export default function PermitDashboardScreen() {
             <IconSymbol name="doc.text.fill" size={36} color={colors.textMuted} />
             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Permit Applications</Text>
             <Text style={[styles.emptySub, { color: colors.textMuted }]}>
-              You currently do not have any submitted applications on file.
+              You currently do not have any submitted applications on file. Tap "Apply Permit" above to start your application.
             </Text>
           </View>
         )}
 
-        {/* Sprint 2 Coming Soon Notice */}
-        <View style={[styles.upcomingCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {/* Business Permit Intake CTA Card */}
+        <TouchableOpacity
+          style={[styles.upcomingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+          onPress={() => router.push('/permit-and-licensing/apply' as any)}
+          activeOpacity={0.85}>
           <View style={styles.upcomingHeader}>
-            <IconSymbol name="building.2.fill" size={18} color={colors.textMuted} />
+            <IconSymbol name="building.2.fill" size={18} color={colors.accent} />
             <Text style={[styles.upcomingTitle, { color: colors.textPrimary }]}>
-              New Permit Application
+              New Business Permit Application
             </Text>
-            <View style={[styles.upcomingBadge, { backgroundColor: isDarkMode ? '#334155' : '#E2E8F0' }]}>
-              <Text style={[styles.upcomingBadgeText, { color: colors.textMuted }]}>Sprint 2</Text>
+            <View style={[styles.upcomingBadge, { backgroundColor: isDarkMode ? '#0369A1' : '#E0F2FE' }]}>
+              <Text style={[styles.upcomingBadgeText, { color: colors.accent }]}>Apply Now</Text>
             </View>
           </View>
           <Text style={[styles.upcomingDesc, { color: colors.textMuted }]}>
-            Online BPLO application intake, document requirements submission, and OCR document screening will be available in Sprint 2.
+            Submit your municipal BPLO application online, attach required clearances, and track AI-assisted document screening.
           </Text>
-        </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

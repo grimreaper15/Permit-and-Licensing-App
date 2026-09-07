@@ -135,12 +135,32 @@ export interface PermitIssuance {
   status?: string;
 }
 
+export interface PermitDocumentSummary {
+  requirement_id?: number | string;
+  id?: number | string;
+  name?: string;
+  document_name?: string;
+  file_path?: string;
+  file_name?: string;
+  status?: 'pending' | 'approved' | 'rejected' | 'Pending' | 'Approved' | 'Rejected' | string;
+  screening_status?: string;
+  rejection_reason?: string | null;
+  uploaded_at?: string;
+  verified_at?: string;
+  screening_result?: {
+    verified?: boolean;
+    confidence?: number;
+    notes?: string;
+  };
+}
+
 export interface PermitTrackingResponse {
   application_no: string;
   permit_id?: number | string;
   id?: number | string;
   permit_type?: string;
   business_name?: string;
+  business_address?: string;
   owner_name?: string;
   status: PermitApplicationStatus;
   current_status?: PermitApplicationStatus;
@@ -149,6 +169,8 @@ export interface PermitTrackingResponse {
   issuance_status?: string;
   created_at?: string;
   updated_at?: string;
+  submitted_at?: string;
+  last_updated?: string;
   timeline?: PermitTimelineStage[];
   payment?: PermitPaymentSummary;
   deficiencies?: PermitDeficiency[];
@@ -156,3 +178,67 @@ export interface PermitTrackingResponse {
   inspection?: PermitInspectionSummary;
   issuance?: PermitIssuance;
 }
+
+// -----------------------------------------------------------------------------
+// Sprint 2: Application Intake & Document Upload Types
+// -----------------------------------------------------------------------------
+
+export type OwnershipType =
+  | 'Sole Proprietorship'
+  | 'Partnership'
+  | 'Corporation'
+  | 'Cooperative';
+
+export interface PermitSubmitPayload {
+  permit_type?: string;
+  business_name: string;
+  business_address: string;
+  line_of_business?: string;
+  capital_investment?: number;
+  gross_sales?: number;
+  number_of_employees?: number;
+  floor_area_sqm?: number;
+  ownership_type?: OwnershipType;
+}
+
+export interface PermitSubmitResult {
+  permit_id: number;
+  application_no: string;
+  permit_type: string;
+  business_name: string;
+  status: string;
+  submitted_at: string;
+}
+
+export interface AiMismatchItem {
+  field?: string;
+  issue?: string;
+  expected?: string;
+  found?: string;
+  [key: string]: any;
+}
+
+export interface AiScreeningData {
+  badge_status?: 'Verified - High Confidence' | 'Needs Review - Discrepancy Found' | 'Deficient - Expired/Blurry' | string;
+  quality_score?: number;
+  is_legible?: number | boolean;
+  is_expired?: number | boolean;
+  ai_confidence?: number;
+  mismatches?: AiMismatchItem[];
+  extracted_data?: Record<string, any>;
+}
+
+export interface PermitUploadResult {
+  document_id: number;
+  permit_id: number;
+  requirement_id: string;
+  document_name: string;
+  original_filename: string;
+  mime_type: string;
+  file_size: number;
+  upload_status: 'completed' | 'pending' | 'failed' | string;
+  ocr_status: 'completed' | 'pending' | 'failed' | 'skipped' | string;
+  screening_status: 'completed' | 'pending' | 'failed' | string;
+  screening?: AiScreeningData | null;
+}
+

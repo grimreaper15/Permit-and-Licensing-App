@@ -8,5 +8,11 @@ export * from './components/ApplicationCard';
 export * from './components/TimelineView';
 export * from './components/PaymentSummaryCard';
 export * from './components/DeficiencyBanner';
+export * from './components/ScreeningBadge';
+export * from './components/RequirementItem';
+export * from './components/DocumentUploadModal';
 export * from './hooks/usePermitApplications';
 export * from './hooks/usePermitTracking';
+export * from './hooks/usePermitSubmission';
+export * from './hooks/usePermitUpload';
+

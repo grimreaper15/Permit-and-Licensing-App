@@ -1,7 +1,14 @@
 import { AuthService } from '@/src/services/auth-service';
 import { PERMIT_CONFIG } from './permitConfig';
 import { PERMIT_ENDPOINTS } from './permitEndpoints';
-import { ApiResponse, PermitApplication, PermitTrackingResponse } from '../types/permit.types';
+import {
+  ApiResponse,
+  PermitApplication,
+  PermitSubmitPayload,
+  PermitSubmitResult,
+  PermitTrackingResponse,
+  PermitUploadResult,
+} from '../types/permit.types';
 
 export class PermitApiError extends Error {
   public statusCode?: number;
@@ -67,10 +74,15 @@ async function executeFetch<T>(url: string, options: RequestInit = {}): Promise<
   const timeoutId = setTimeout(() => controller.abort(), PERMIT_CONFIG.timeoutMs);
 
   try {
-    const headers = {
+    const headers: Record<string, string> = {
       ...getAuthHeaders(),
       ...(options.headers as Record<string, string> || {}),
     };
+
+    // If payload is multipart FormData, remove Content-Type so boundary is auto-generated
+    if (typeof FormData !== 'undefined' && options.body instanceof FormData) {
+      delete headers['Content-Type'];
+    }
 
     const response = await fetch(url, {
       ...options,
@@ -158,3 +170,51 @@ export async function getPermitTracking(applicationNoOrId: string | number): Pro
 
   return response.data;
 }
+
+/**
+ * Submit a new BPLO permit application to the webhost backend
+ */
+export async function submitPermitApplication(payload: PermitSubmitPayload): Promise<PermitSubmitResult> {
+  const url = PERMIT_ENDPOINTS.submit();
+
+  const formData = new FormData();
+  formData.append('permit_type', payload.permit_type || 'Business Permit');
+  formData.append('business_name', payload.business_name.trim());
+  formData.append('business_address', payload.business_address.trim());
+  formData.append('line_of_business', payload.line_of_business || 'General Trade');
+  formData.append('capital_investment', String(payload.capital_investment || 0));
+  formData.append('gross_sales', String(payload.gross_sales || 0));
+  formData.append('number_of_employees', String(payload.number_of_employees || 1));
+  formData.append('floor_area_sqm', String(payload.floor_area_sqm || 0));
+  formData.append('ownership_type', payload.ownership_type || 'Sole Proprietorship');
+
+  const response = await executeFetch<PermitSubmitResult>(url, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.data || !response.data.application_no) {
+    throw new PermitApiError('Application submitted, but server did not return application identifiers.');
+  }
+
+  return response.data;
+}
+
+/**
+ * Upload a document requirement with automated OCR.Space & Gemini screening
+ */
+export async function uploadPermitRequirement(formData: FormData): Promise<PermitUploadResult> {
+  const url = PERMIT_ENDPOINTS.uploadRequirement();
+
+  const response = await executeFetch<PermitUploadResult>(url, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.data || !response.data.document_id) {
+    throw new PermitApiError('Document uploaded, but server did not return document record ID.');
+  }
+
+  return response.data;
+}
+

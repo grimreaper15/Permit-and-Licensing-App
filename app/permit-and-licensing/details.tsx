@@ -153,6 +153,75 @@ export default function ApplicationDetailsScreen() {
           <PaymentSummaryCard payment={trackingData.payment} />
         ) : null}
 
+        {/* Document Requirements & Screening Section */}
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.sectionHeaderRow}>
+            <IconSymbol name="arrow.up.doc.fill" size={18} color={colors.accent} />
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+              Document Requirements ({trackingData?.documents?.length || 0})
+            </Text>
+          </View>
+
+          {trackingData?.documents && trackingData.documents.length > 0 ? (
+            <View style={styles.docList}>
+              {trackingData.documents.map((doc, idx) => (
+                <View
+                  key={doc.id || doc.requirement_id || idx}
+                  style={[
+                    styles.docMiniRow,
+                    {
+                      backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC',
+                      borderColor: colors.border,
+                    },
+                  ]}>
+                  <View style={styles.docMiniLeft}>
+                    <IconSymbol name="doc.text.fill" size={16} color={colors.accent} />
+                    <View style={styles.docMiniTextCol}>
+                      <Text style={[styles.docMiniName, { color: colors.textPrimary }]}>
+                        {doc.document_name || doc.name || 'Document'}
+                      </Text>
+                      {doc.uploaded_at ? (
+                        <Text style={[styles.docMiniMeta, { color: colors.textMuted }]}>
+                          Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
+                        </Text>
+                      ) : (
+                        <Text style={[styles.docMiniMeta, { color: colors.textMuted }]}>
+                          Pending upload
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  {doc.screening_status ? (
+                    <StatusBadge status={doc.screening_status} size="small" />
+                  ) : (
+                    <StatusBadge status={doc.status || 'pending'} size="small" />
+                  )}
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={[styles.noDocsText, { color: colors.textMuted }]}>
+              No document attachments on record yet.
+            </Text>
+          )}
+
+          <TouchableOpacity
+            style={[styles.manageDocsBtn, { backgroundColor: colors.accent }]}
+            onPress={() =>
+              router.push({
+                pathname: '/permit-and-licensing/upload' as any,
+                params: {
+                  application_no: applicationNo,
+                  permit_id: String(trackingData?.permit_id || params.id || ''),
+                },
+              })
+            }
+            activeOpacity={0.85}>
+            <IconSymbol name="arrow.up.doc.fill" size={14} color="#FFFFFF" />
+            <Text style={styles.manageDocsBtnText}>Upload / Manage Documents</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Issuance Information if available */}
         {trackingData?.issuance?.permit_number ? (
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -176,6 +245,7 @@ export default function ApplicationDetailsScreen() {
             ) : null}
           </View>
         ) : null}
+
 
         {/* Timeline Preview Section */}
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -365,4 +435,52 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
+  docList: {
+    gap: 8,
+    marginBottom: 12,
+  },
+  docMiniRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  docMiniLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  docMiniTextCol: {
+    flex: 1,
+    gap: 1,
+  },
+  docMiniName: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  docMiniMeta: {
+    fontSize: 11,
+  },
+  noDocsText: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginBottom: 10,
+  },
+  manageDocsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  manageDocsBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
 });
+
