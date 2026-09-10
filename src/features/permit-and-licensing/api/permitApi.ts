@@ -8,6 +8,8 @@ import {
   PermitSubmitResult,
   PermitTrackingResponse,
   PermitUploadResult,
+  PermitVerificationResult,
+  TproVerificationResult,
 } from '../types/permit.types';
 
 export class PermitApiError extends Error {
@@ -217,4 +219,143 @@ export async function uploadPermitRequirement(formData: FormData): Promise<Permi
 
   return response.data;
 }
+
+/**
+ * Verify a BPLO permit via public verification token
+ */
+export async function verifyBploPermit(token: string): Promise<PermitVerificationResult> {
+  const trimmed = token.trim();
+  if (!trimmed) {
+    return {
+      valid: false,
+      verification_status: 'INVALID',
+      verification_message: 'Verification token cannot be empty.',
+    };
+  }
+
+  const url = PERMIT_ENDPOINTS.verifyBploQr(trimmed);
+
+  try {
+    const response = await executeFetch<any>(url, { method: 'GET' });
+    const payload = response.data;
+
+    // Backend returns structured data in payload
+    if (payload && typeof payload === 'object') {
+      const isExplicitValid = payload.valid === true;
+      const statusRaw = String(payload.verification_status || payload.status || (isExplicitValid ? 'VALID' : 'INVALID')).toUpperCase();
+
+      return {
+        valid: isExplicitValid,
+        verification_status: statusRaw,
+        permit_number: payload.permit_number || null,
+        permit_type: payload.permit_type || null,
+        business_name: payload.business_name || null,
+        status: payload.status || null,
+        issued_at: payload.issued_at || null,
+        payment_verified: payload.payment_verified === true,
+        is_issued: payload.is_issued === true,
+        verification_message: payload.verification_message || response.message || (isExplicitValid ? 'Permit is authentic and officially issued.' : 'Invalid permit verification token.'),
+        raw_status: statusRaw,
+      };
+    }
+
+    return {
+      valid: false,
+      verification_status: 'UNKNOWN',
+      verification_message: response.message || 'Unexpected server response format.',
+    };
+  } catch (err: any) {
+    if (err instanceof PermitApiError && err.rawResponse) {
+      const rawData = err.rawResponse.data || err.rawResponse;
+      const statusRaw = String(rawData.verification_status || rawData.status || 'INVALID').toUpperCase();
+
+      return {
+        valid: rawData.valid === true,
+        verification_status: statusRaw,
+        permit_number: rawData.permit_number || null,
+        permit_type: rawData.permit_type || null,
+        business_name: rawData.business_name || null,
+        status: rawData.status || null,
+        issued_at: rawData.issued_at || null,
+        payment_verified: rawData.payment_verified === true,
+        is_issued: rawData.is_issued === true,
+        verification_message: rawData.verification_message || err.message || 'Permit verification failed.',
+        raw_status: statusRaw,
+      };
+    }
+
+    return {
+      valid: false,
+      verification_status: 'INVALID',
+      verification_message: err.message || 'Verification token was not recognized.',
+    };
+  }
+}
+
+/**
+ * Verify a Transport / Franchise permit via TPRO verifier
+ */
+export async function verifyTproPermit(hashOrValue: string): Promise<TproVerificationResult> {
+  const trimmed = hashOrValue.trim();
+  if (!trimmed) {
+    return {
+      valid: false,
+      status: 'INVALID',
+      message: 'Transport verification query cannot be empty.',
+    };
+  }
+
+  const url = PERMIT_ENDPOINTS.verifyTproQr(trimmed);
+
+  try {
+    const response = await executeFetch<any>(url, { method: 'GET' });
+    const payload = response.data || {};
+
+    const isSuccess = response.success || response.status === 'success' || payload.is_valid_issued === true;
+    const statusText = payload.status || (isSuccess ? 'VALID & ACTIVE' : 'VERIFIED');
+
+    return {
+      valid: isSuccess,
+      status: statusText,
+      message: response.message || payload.verification_summary || 'Transport record verified.',
+      franchise_number: payload.franchise_number || payload.franchise_no || payload.permit_number || null,
+      application_no: payload.application_no || null,
+      operator_name: payload.operator_name || payload.driver_name || payload.applicant_name || null,
+      plate_number: payload.plate_number || payload.plate_no || null,
+      sticker_number: payload.sticker_number || payload.sticker_no || null,
+      is_valid_issued: payload.is_valid_issued === true,
+      is_blocked: payload.is_blocked === true,
+      block_reason: payload.block_reason || null,
+      citations_count: typeof payload.citations_count === 'number' ? payload.citations_count : (Array.isArray(payload.citations) ? payload.citations.length : undefined),
+      payment_status: payload.payment_status || null,
+      issued_at: payload.issued_at || payload.date_issued || null,
+      valid_until: payload.valid_until || payload.expiry_date || null,
+      raw_data: payload,
+    };
+  } catch (err: any) {
+    if (err instanceof PermitApiError && err.rawResponse) {
+      const raw = err.rawResponse;
+      const rawData = raw.data || {};
+
+      return {
+        valid: false,
+        status: raw.status === 'error' ? 'NOT_FOUND' : 'INVALID',
+        message: raw.message || err.message || 'No matching transport record found.',
+        franchise_number: rawData.franchise_number || null,
+        application_no: rawData.application_no || null,
+        operator_name: rawData.operator_name || null,
+        is_blocked: rawData.is_blocked === true,
+        block_reason: rawData.block_reason || null,
+        raw_data: raw,
+      };
+    }
+
+    return {
+      valid: false,
+      status: 'INVALID',
+      message: err.message || 'Unable to complete transport verification.',
+    };
+  }
+}
+
 

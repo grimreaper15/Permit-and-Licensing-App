@@ -11,6 +11,8 @@ export * from './components/DeficiencyBanner';
 export * from './components/ScreeningBadge';
 export * from './components/RequirementItem';
 export * from './components/DocumentUploadModal';
+export * from './components/PermitVerificationBadge';
+export * from './components/VerificationResultCard';
 export * from './hooks/usePermitApplications';
 export * from './hooks/usePermitTracking';
 export * from './hooks/usePermitSubmission';

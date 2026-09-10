@@ -19,5 +19,11 @@ export const PERMIT_ENDPOINTS = {
 
   document: (documentId: string | number) =>
     `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=document&id=${encodeURIComponent(documentId)}`,
+
+  verifyBploQr: (token: string) =>
+    `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=verify_qr&token=${encodeURIComponent(token.trim())}`,
+
+  verifyTproQr: (hashOrValue: string) =>
+    `${PERMIT_CONFIG.baseUrl}/api/licensing/index.php?resource=transport&action=verify-qr&hash=${encodeURIComponent(hashOrValue.trim())}`,
 } as const;
 

@@ -222,20 +222,26 @@ export default function ApplicationDetailsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Issuance Information if available */}
-        {trackingData?.issuance?.permit_number ? (
-          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {/* Issuance Information & Digital Permit Action */}
+        {trackingData?.issuance_status?.toLowerCase() === 'issued' ||
+        trackingData?.issuance?.status?.toLowerCase() === 'issued' ||
+        status.toLowerCase() === 'issued' ? (
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: isDarkMode ? '#059669' : '#10B981' }]}>
             <View style={styles.sectionHeaderRow}>
               <IconSymbol name="checkmark.seal.fill" size={18} color={colors.success} />
-              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Issued Permit Details</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Issued Digital Permit</Text>
             </View>
-            <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Permit Number:</Text>
-              <Text style={[styles.detailValue, { color: colors.textPrimary }]}>
-                {trackingData.issuance.permit_number}
-              </Text>
-            </View>
-            {trackingData.issuance.valid_until ? (
+
+            {trackingData?.issuance?.permit_number ? (
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Permit Number:</Text>
+                <Text style={[styles.detailValue, { color: colors.textPrimary }]}>
+                  {trackingData.issuance.permit_number}
+                </Text>
+              </View>
+            ) : null}
+
+            {trackingData?.issuance?.valid_until ? (
               <View style={styles.detailRow}>
                 <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Valid Until:</Text>
                 <Text style={[styles.detailValue, { color: colors.textPrimary }]}>
@@ -243,6 +249,20 @@ export default function ApplicationDetailsScreen() {
                 </Text>
               </View>
             ) : null}
+
+            <TouchableOpacity
+              style={[styles.digitalPermitBtn, { backgroundColor: colors.accent }]}
+              onPress={() =>
+                router.push({
+                  pathname: '/permit-and-licensing/permit' as any,
+                  params: { application_no: applicationNo },
+                })
+              }
+              activeOpacity={0.85}>
+              <IconSymbol name="doc.text.fill" size={16} color="#FFFFFF" />
+              <Text style={styles.digitalPermitBtnText}>View Digital Permit Metadata</Text>
+              <IconSymbol name="chevron.right" size={14} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
         ) : null}
 
@@ -480,6 +500,21 @@ const styles = StyleSheet.create({
   manageDocsBtnText: {
     color: '#FFFFFF',
     fontSize: 13,
+    fontWeight: '700',
+  },
+  digitalPermitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginTop: 12,
+  },
+  digitalPermitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '700',
   },
 });

@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
 import { useTheme } from '@/src/context/ThemeContext';
 import {
@@ -19,29 +19,55 @@ import {
   usePermitApplications,
 } from '@/src/features/permit-and-licensing';
 
-type FilterTab = 'ALL' | 'IN_REVIEW' | 'ACTION_REQUIRED' | 'APPROVED';
+type FilterTab = 'ALL' | 'ISSUED' | 'IN_REVIEW' | 'ACTION_REQUIRED' | 'APPROVED';
 
 export default function MyApplicationsScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ tab?: string }>();
   const { isDarkMode } = useTheme();
   const colors = isDarkMode ? PERMIT_COLORS.dark : PERMIT_COLORS.light;
 
   const { applications, isLoading, isRefreshing, error, refresh } = usePermitApplications();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<FilterTab>('ALL');
+
+  const initialTab: FilterTab =
+    params.tab?.toUpperCase() === 'ISSUED'
+      ? 'ISSUED'
+      : params.tab?.toUpperCase() === 'IN_REVIEW'
+      ? 'IN_REVIEW'
+      : params.tab?.toUpperCase() === 'ACTION_REQUIRED'
+      ? 'ACTION_REQUIRED'
+      : params.tab?.toUpperCase() === 'APPROVED'
+      ? 'APPROVED'
+      : 'ALL';
+
+  const [activeTab, setActiveTab] = useState<FilterTab>(initialTab);
+
+  const issuedCount = useMemo(() => {
+    return applications.filter((app) => {
+      const rawStatus = (app.status || app.current_status || '').toLowerCase();
+      const rawIssuance = (app.issuance_status || '').toLowerCase();
+      return rawIssuance === 'issued' || rawStatus === 'issued';
+    }).length;
+  }, [applications]);
 
   const filteredApplications = useMemo(() => {
     return applications.filter((app) => {
       // Tab filter
       const rawStatus = (app.status || app.current_status || '').toLowerCase();
-      if (activeTab === 'IN_REVIEW') {
+      const rawIssuance = (app.issuance_status || '').toLowerCase();
+
+      if (activeTab === 'ISSUED') {
+        const isIssued = rawIssuance === 'issued' || rawStatus === 'issued';
+        if (!isIssued) return false;
+      } else if (activeTab === 'IN_REVIEW') {
         const match = ['submitted', 'under_review', 'document_screening', 'pending'].includes(rawStatus);
         if (!match) return false;
       } else if (activeTab === 'ACTION_REQUIRED') {
         const match = ['pending_requirements', 'needs_action', 'fee_assessment', 'pending_payment'].includes(rawStatus);
         if (!match) return false;
       } else if (activeTab === 'APPROVED') {
-        const match = ['approved', 'issued', 'payment_verified', 'inspection_passed'].includes(rawStatus);
+        const match = ['approved', 'payment_verified', 'inspection_passed'].includes(rawStatus);
         if (!match) return false;
       }
 
@@ -72,6 +98,7 @@ export default function MyApplicationsScreen() {
 
   const tabs: { key: FilterTab; label: string }[] = [
     { key: 'ALL', label: `All (${applications.length})` },
+    { key: 'ISSUED', label: `Issued (${issuedCount})` },
     { key: 'IN_REVIEW', label: 'In Review' },
     { key: 'ACTION_REQUIRED', label: 'Action Needed' },
     { key: 'APPROVED', label: 'Approved' },

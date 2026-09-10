@@ -87,6 +87,7 @@ export interface PermitPaymentSummary {
   payment_date?: string;
   payment_method?: string;
   fees?: PermitFeeItem[];
+  fee_breakdown?: PermitFeeItem[];
 }
 
 export interface PermitDeficiency {
@@ -108,7 +109,10 @@ export interface PermitDocumentSummary {
   file_path?: string;
   file_name?: string;
   status?: 'pending' | 'approved' | 'rejected' | string;
+  screening_status?: string;
+  rejection_reason?: string | null;
   uploaded_at?: string;
+  verified_at?: string;
   screening_result?: {
     verified?: boolean;
     confidence?: number;
@@ -133,25 +137,8 @@ export interface PermitIssuance {
   qr_code?: string;
   qr_hash?: string;
   status?: string;
-}
-
-export interface PermitDocumentSummary {
-  requirement_id?: number | string;
-  id?: number | string;
-  name?: string;
-  document_name?: string;
-  file_path?: string;
-  file_name?: string;
-  status?: 'pending' | 'approved' | 'rejected' | 'Pending' | 'Approved' | 'Rejected' | string;
-  screening_status?: string;
-  rejection_reason?: string | null;
-  uploaded_at?: string;
-  verified_at?: string;
-  screening_result?: {
-    verified?: boolean;
-    confidence?: number;
-    notes?: string;
-  };
+  qr_verification_available?: boolean;
+  verification_token?: string | null;
 }
 
 export interface PermitTrackingResponse {
@@ -167,6 +154,7 @@ export interface PermitTrackingResponse {
   approval_status?: string;
   payment_status?: string;
   issuance_status?: string;
+  issuance_block_reason?: string | null;
   created_at?: string;
   updated_at?: string;
   submitted_at?: string;
@@ -177,6 +165,73 @@ export interface PermitTrackingResponse {
   documents?: PermitDocumentSummary[];
   inspection?: PermitInspectionSummary;
   issuance?: PermitIssuance;
+}
+
+// -----------------------------------------------------------------------------
+// Sprint 3B: Digital Permit Metadata & Verification Types
+// -----------------------------------------------------------------------------
+
+export type PermitVerificationStatus =
+  | 'VALID'
+  | 'INVALID'
+  | 'RETIRED'
+  | 'NOT_ISSUED'
+  | 'BLOCKED'
+  | 'UNPAID'
+  | 'PENDING'
+  | 'UNKNOWN'
+  | string;
+
+export interface PermitVerificationResult {
+  valid: boolean;
+  verification_status: PermitVerificationStatus;
+  permit_number?: string | null;
+  permit_type?: string | null;
+  business_name?: string | null;
+  status?: string | null;
+  issued_at?: string | null;
+  payment_verified?: boolean;
+  is_issued?: boolean;
+  verification_message?: string;
+  raw_status?: string;
+}
+
+export interface TproVerificationResult {
+  valid: boolean;
+  status: string;
+  message: string;
+  franchise_number?: string | null;
+  application_no?: string | null;
+  operator_name?: string | null;
+  plate_number?: string | null;
+  sticker_number?: string | null;
+  is_valid_issued?: boolean;
+  is_blocked?: boolean;
+  block_reason?: string | null;
+  citations_count?: number;
+  payment_status?: string | null;
+  issued_at?: string | null;
+  valid_until?: string | null;
+  raw_data?: any;
+}
+
+export interface DigitalPermitMetadata {
+  permit_number: string;
+  permit_type: string;
+  business_name: string;
+  application_no: string;
+  approval_status: string;
+  payment_status: string;
+  issuance_status: string;
+  issued_at: string | null;
+  valid_until?: string | null;
+  verification_available: boolean;
+  verification_token: string | null;
+  issuance_block_reason?: string | null;
+  total_amount?: number | string;
+  total_paid?: number | string;
+  balance?: number | string;
+  fee_breakdown?: PermitFeeItem[];
 }
 
 // -----------------------------------------------------------------------------

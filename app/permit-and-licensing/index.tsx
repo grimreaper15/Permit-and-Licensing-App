@@ -39,6 +39,12 @@ export default function PermitDashboardScreen() {
     return s === 'approved' || s === 'issued' || s === 'payment_verified';
   }).length;
 
+  const issuedCount = applications.filter((app) => {
+    const s = (app.status || app.current_status || '').toLowerCase();
+    const is = (app.issuance_status || '').toLowerCase();
+    return is === 'issued' || s === 'issued';
+  }).length;
+
   const recentApplications = applications.slice(0, 3);
 
   return (
@@ -54,12 +60,20 @@ export default function PermitDashboardScreen() {
         <Text style={[styles.navTitle, { color: colors.textPrimary }]}>
           Permit & Licensing
         </Text>
-        <TouchableOpacity
-          style={styles.trackBtn}
-          onPress={() => router.push('/permit-and-licensing/tracking' as any)}
-          activeOpacity={0.75}>
-          <IconSymbol name="magnifyingglass" size={20} color={colors.accent} />
-        </TouchableOpacity>
+        <View style={styles.topNavRight}>
+          <TouchableOpacity
+            style={styles.verifyNavBtn}
+            onPress={() => router.push('/permit-and-licensing/verify-qr' as any)}
+            activeOpacity={0.75}>
+            <IconSymbol name="checkmark.shield.fill" size={18} color={colors.accent} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.trackBtn}
+            onPress={() => router.push('/permit-and-licensing/tracking' as any)}
+            activeOpacity={0.75}>
+            <IconSymbol name="magnifyingglass" size={18} color={colors.accent} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -84,7 +98,7 @@ export default function PermitDashboardScreen() {
           </Text>
         </View>
 
-        {/* Quick Action Navigation Grid */}
+        {/* Quick Action Navigation Grid - Row 1 */}
         <View style={styles.actionGrid}>
           <TouchableOpacity
             style={[styles.actionCard, { backgroundColor: colors.accent, borderColor: colors.accent }]}
@@ -95,7 +109,7 @@ export default function PermitDashboardScreen() {
             </View>
             <Text style={[styles.actionCardTitle, { color: '#FFFFFF' }]}>Apply Permit</Text>
             <Text style={[styles.actionCardDesc, { color: '#E0F2FE' }]}>
-              New BPLO application
+              New application
             </Text>
           </TouchableOpacity>
 
@@ -108,7 +122,7 @@ export default function PermitDashboardScreen() {
             </View>
             <Text style={[styles.actionCardTitle, { color: colors.textPrimary }]}>My Applications</Text>
             <Text style={[styles.actionCardDesc, { color: colors.textMuted }]}>
-              {totalCount > 0 ? `${totalCount} records on file` : 'View all submissions'}
+              {totalCount > 0 ? `${totalCount} records` : 'View all'}
             </Text>
           </TouchableOpacity>
 
@@ -120,7 +134,47 @@ export default function PermitDashboardScreen() {
               <IconSymbol name="magnifyingglass" size={20} color={colors.success} />
             </View>
             <Text style={[styles.actionCardTitle, { color: colors.textPrimary }]}>Track Permit</Text>
-            <Text style={[styles.actionCardDesc, { color: colors.textMuted }]}>Live 7-stage progress</Text>
+            <Text style={[styles.actionCardDesc, { color: colors.textMuted }]}>Live progress</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Quick Action Row 2: Issued Permits & Verify Permit */}
+        <View style={[styles.actionGrid, { marginBottom: 16 }]}>
+          <TouchableOpacity
+            style={[styles.actionCardWide, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() =>
+              router.push({
+                pathname: '/permit-and-licensing/applications' as any,
+                params: { tab: 'ISSUED' },
+              })
+            }
+            activeOpacity={0.8}>
+            <View style={[styles.actionIconCircle, { backgroundColor: colors.successLight }]}>
+              <IconSymbol name="checkmark.seal.fill" size={18} color={colors.success} />
+            </View>
+            <View style={styles.actionCardWideText}>
+              <Text style={[styles.actionCardTitle, { color: colors.textPrimary }]}>Issued Permits</Text>
+              <Text style={[styles.actionCardDesc, { color: colors.textMuted }]}>
+                {issuedCount > 0 ? `${issuedCount} official permits on file` : 'View digital permit metadata'}
+              </Text>
+            </View>
+            <IconSymbol name="chevron.right" size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionCardWide, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => router.push('/permit-and-licensing/verify-qr' as any)}
+            activeOpacity={0.8}>
+            <View style={[styles.actionIconCircle, { backgroundColor: isDarkMode ? '#1E293B' : '#EFF6FF' }]}>
+              <IconSymbol name="checkmark.shield.fill" size={18} color={colors.accent} />
+            </View>
+            <View style={styles.actionCardWideText}>
+              <Text style={[styles.actionCardTitle, { color: colors.textPrimary }]}>Verify Authenticity</Text>
+              <Text style={[styles.actionCardDesc, { color: colors.textMuted }]}>
+                BPLO token / TPRO QR verification
+              </Text>
+            </View>
+            <IconSymbol name="chevron.right" size={14} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -245,7 +299,19 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
   },
+  topNavRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  verifyNavBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -299,6 +365,18 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
+  },
+  actionCardWide: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+  },
+  actionCardWideText: {
+    flex: 1,
   },
   actionIconCircle: {
     width: 36,
