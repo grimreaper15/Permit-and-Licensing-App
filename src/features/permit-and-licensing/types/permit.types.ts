@@ -37,7 +37,7 @@ export interface PermitApplication {
   business_name?: string;
   line_of_business?: string;
   owner_name?: string;
-  status: PermitApplicationStatus;
+  status?: PermitApplicationStatus;
   current_status?: PermitApplicationStatus;
   approval_status?: string;
   payment_status?: string;
@@ -59,7 +59,8 @@ export type TimelineStageStatus =
 export interface PermitTimelineStage {
   stage_id?: string | number;
   stage_number?: number;
-  stage_name: string;
+  stage?: string;
+  stage_name?: string;
   name?: string;
   title?: string;
   status: TimelineStageStatus;
@@ -149,7 +150,7 @@ export interface PermitTrackingResponse {
   business_name?: string;
   business_address?: string;
   owner_name?: string;
-  status: PermitApplicationStatus;
+  status?: PermitApplicationStatus;
   current_status?: PermitApplicationStatus;
   approval_status?: string;
   payment_status?: string;

@@ -5,6 +5,7 @@ import { useTheme } from '@/src/context/ThemeContext';
 import { PERMIT_COLORS } from '../styles/permit.styles';
 import { PermitDocumentSummary } from '../types/permit.types';
 import { ScreeningBadge } from './ScreeningBadge';
+import { StatusBadge } from './StatusBadge';
 
 interface RequirementItemProps {
   document: PermitDocumentSummary;
@@ -21,8 +22,10 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
   const colors = isDarkMode ? PERMIT_COLORS.dark : PERMIT_COLORS.light;
 
   const docName = document.document_name || document.name || 'Permit Requirement';
-  const isUploaded = !!document.uploaded_at || document.status === 'Approved' || document.status === 'Pending';
-  const isRejected = document.status === 'Rejected';
+  const rawStatus = (document.status || '').toLowerCase().trim();
+  const isVerified = rawStatus === 'verified' || rawStatus === 'approved';
+  const isRejected = rawStatus === 'rejected';
+  const isUploaded = !!document.uploaded_at || isVerified || rawStatus === 'pending' || document.status === 'Approved' || document.status === 'Pending';
 
   let formattedDate: string | null = null;
   if (document.uploaded_at) {
@@ -41,24 +44,66 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
   }
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card, borderColor: isRejected ? colors.danger : colors.border }]}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: isRejected ? colors.danger : isVerified ? colors.success : colors.border,
+        },
+      ]}>
       <View style={styles.topRow}>
-        <View style={[styles.iconCircle, { backgroundColor: isUploaded ? colors.infoLight : (isDarkMode ? '#334155' : '#F1F5F9') }]}>
+        <View
+          style={[
+            styles.iconCircle,
+            {
+              backgroundColor: isVerified
+                ? colors.successLight
+                : isRejected
+                ? colors.dangerLight
+                : isUploaded
+                ? colors.infoLight
+                : isDarkMode
+                ? '#334155'
+                : '#F1F5F9',
+            },
+          ]}>
           <IconSymbol
-            name={isUploaded ? 'doc.text.fill' : 'doc.fill'}
+            name={
+              isVerified
+                ? 'checkmark.circle.fill'
+                : isRejected
+                ? 'exclamationmark.triangle.fill'
+                : isUploaded
+                ? 'doc.text.fill'
+                : 'doc.fill'
+            }
             size={18}
-            color={isUploaded ? colors.accent : colors.textMuted}
+            color={
+              isVerified
+                ? colors.success
+                : isRejected
+                ? colors.danger
+                : isUploaded
+                ? colors.accent
+                : colors.textMuted
+            }
           />
         </View>
         <View style={styles.contentCol}>
           <Text style={[styles.docName, { color: colors.textPrimary }]}>{docName}</Text>
+          {document.status ? (
+            <View style={styles.statusRow}>
+              <StatusBadge status={document.status} size="small" />
+            </View>
+          ) : null}
           {formattedDate ? (
             <Text style={[styles.uploadDateText, { color: colors.textMuted }]}>
               Uploaded: {formattedDate}
             </Text>
           ) : (
             <Text style={[styles.uploadDateText, { color: colors.textMuted }]}>
-              Not yet submitted
+              {isUploaded ? 'Document Attached' : 'Not yet submitted'}
             </Text>
           )}
         </View>
@@ -182,5 +227,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     flex: 1,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    marginBottom: 2,
   },
 });

@@ -43,7 +43,6 @@ export default function DigitalPermitScreen() {
   const issuedDate = issuance?.issued_at || null;
   const validUntil = issuance?.valid_until || issuance?.expiry_date || null;
   const verificationToken = issuance?.verification_token || null;
-  const isVerificationAvailable = issuance?.qr_verification_available === true || !!verificationToken;
   const issuanceBlockReason = trackingData?.issuance_block_reason || null;
 
   return (

@@ -39,7 +39,6 @@ export default function DocumentUploadScreen() {
 
   const [selectedRequirement, setSelectedRequirement] = useState<PermitDocumentSummary | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [customDocType, setCustomDocType] = useState<string | null>(null);
 
   const applicationNo = trackingData?.application_no || params.application_no || `ID #${params.permit_id || params.id || 'N/A'}`;
   const permitId = trackingData?.permit_id || trackingData?.id || params.permit_id || params.id || '';

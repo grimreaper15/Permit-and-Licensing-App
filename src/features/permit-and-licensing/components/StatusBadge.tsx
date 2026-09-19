@@ -39,10 +39,14 @@ function formatStatusLabel(statusStr: string): string {
       return 'Final Approval';
     case 'approved':
       return 'Approved';
+    case 'verified':
+      return 'Verified';
     case 'issued':
       return 'Permit Issued';
     case 'ready_for_release':
       return 'Ready For Release';
+    case 'pending':
+      return 'Pending';
     case 'rejected':
       return 'Rejected';
     case 'cancelled':
@@ -66,11 +70,11 @@ export function StatusBadge({ status, size = 'small' }: StatusBadgeProps) {
   let badgeText = isDarkMode ? '#94A3B8' : '#64748B';
   let borderColor = isDarkMode ? '#334155' : '#CBD5E1';
 
-  if (['approved', 'issued', 'payment_verified', 'inspection_passed', 'ready_for_release'].includes(rawStatus)) {
+  if (['approved', 'issued', 'payment_verified', 'inspection_passed', 'ready_for_release', 'verified'].includes(rawStatus)) {
     badgeBg = colors.successLight;
     badgeText = colors.success;
     borderColor = isDarkMode ? '#065F46' : '#BBF7D0';
-  } else if (['under_review', 'document_screening', 'pending_requirements', 'needs_action', 'fee_assessment', 'assessment', 'pending_payment'].includes(rawStatus)) {
+  } else if (['under_review', 'document_screening', 'pending_requirements', 'needs_action', 'fee_assessment', 'assessment', 'pending_payment', 'pending'].includes(rawStatus)) {
     badgeBg = colors.warningLight;
     badgeText = colors.warning;
     borderColor = isDarkMode ? '#854D0E' : '#FDE68A';

@@ -254,7 +254,7 @@ export default function PermitDashboardScreen() {
             <IconSymbol name="doc.text.fill" size={36} color={colors.textMuted} />
             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Permit Applications</Text>
             <Text style={[styles.emptySub, { color: colors.textMuted }]}>
-              You currently do not have any submitted applications on file. Tap "Apply Permit" above to start your application.
+              You currently do not have any submitted applications on file. Tap &quot;Apply Permit&quot; above to start your application.
             </Text>
           </View>
         )}

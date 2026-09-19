@@ -40,6 +40,7 @@ export function PaymentSummaryCard({ payment }: PaymentSummaryCardProps) {
   const calculatedBalance = Math.max(0, totalAmountNum - totalPaidNum);
   const isPaid = payment.is_paid === true || (totalAmountNum > 0 && calculatedBalance <= 0);
   const paymentStatus = payment.payment_status?.toLowerCase() || (isPaid ? 'verified' : 'unpaid');
+  const fees = payment.fee_breakdown ?? payment.fees ?? [];
 
   let statusBadgeBg = colors.warningLight;
   let statusBadgeText = colors.warning;
@@ -75,9 +76,9 @@ export function PaymentSummaryCard({ payment }: PaymentSummaryCardProps) {
       </View>
 
       {/* Fee Breakdown Items if available */}
-      {payment.fees && payment.fees.length > 0 ? (
+      {fees.length > 0 ? (
         <View style={[styles.feeList, { borderBottomColor: colors.border }]}>
-          {payment.fees.map((fee, idx) => {
+          {fees.map((fee, idx) => {
             const feeAmt = typeof fee.amount === 'number'
               ? fee.amount
               : parseFloat(String(fee.amount || 0));

@@ -94,7 +94,7 @@ export default function ApplyPermitScreen() {
   const [selectedType, setSelectedType] = useState('Business Permit');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const { formState, updateField, isSubmitting, error, submitResult, submit, reset } =
+  const { formState, updateField, isSubmitting, error, submitResult, submit } =
     usePermitSubmission();
 
   const handleSubmit = async () => {

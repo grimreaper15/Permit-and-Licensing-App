@@ -29,7 +29,7 @@ export function TimelineView({ stages = [] }: TimelineViewProps) {
       {stages.map((stage, index) => {
         const isLast = index === stages.length - 1;
         const rawStatus = (stage.status || 'pending').toLowerCase().trim();
-        const stageName = stage.stage_name || stage.name || stage.title || `Stage ${index + 1}`;
+        const stageName = stage.stage || stage.stage_name || stage.name || stage.title || `Stage ${index + 1}`;
         const description = stage.description || stage.remarks;
         const timestamp = stage.timestamp || stage.updated_at;
 
