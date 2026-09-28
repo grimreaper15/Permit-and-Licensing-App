@@ -27,17 +27,20 @@ export class PermitApiError extends Error {
 /**
  * Builds request headers including citizen authentication headers if available
  */
-function getAuthHeaders(): Record<string, string> {
+export function getAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     ...PERMIT_CONFIG.defaultHeaders,
   };
 
   try {
     const currentUser = AuthService.getCurrentUser();
-    if (currentUser && !currentUser.isGuest && currentUser.citizen_user_id) {
-      headers['Authorization'] = `Bearer ${currentUser.citizen_user_id}`;
-      headers['X-Citizen-Id'] = String(currentUser.citizen_user_id);
-      headers['X-Applicant-Id'] = String(currentUser.citizen_user_id);
+    if (currentUser && !currentUser.isGuest) {
+      if (currentUser.token) {
+        headers['Authorization'] = `Bearer ${currentUser.token}`;
+      }
+      if (currentUser.citizen_user_id) {
+        headers['X-Citizen-Id'] = String(currentUser.citizen_user_id);
+      }
     }
   } catch {
     // Graceful fallback if AuthService is in an uninitialized state

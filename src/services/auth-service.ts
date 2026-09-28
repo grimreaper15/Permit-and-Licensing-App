@@ -34,6 +34,7 @@ export class AuthService {
   private static currentUserPhone: string | null = null;
   private static currentUserId: number | null = null;
   private static currentUserData: any = null;
+  private static currentToken: string | null = null;
 
   static setGuestMode(guest: boolean) {
     this.isGuest = guest;
@@ -42,6 +43,7 @@ export class AuthService {
       this.currentUserPhone = null;
       this.currentUserId = null;
       this.currentUserData = null;
+      this.currentToken = null;
     }
   }
 
@@ -49,20 +51,35 @@ export class AuthService {
     return this.isGuest || (!this.currentUserEmail && !this.currentUserPhone && !this.currentUserId);
   }
 
-  static setCurrentUser(data: { email?: string; phone?: string; citizen_user_id?: number; user?: any }) {
+  static setCurrentUser(data: {
+    email?: string;
+    phone?: string;
+    citizen_user_id?: number;
+    user?: any;
+    token?: string | null;
+  }) {
     this.isGuest = false;
     if (data.email) this.currentUserEmail = data.email;
     if (data.phone) this.currentUserPhone = data.phone;
     if (data.citizen_user_id) this.currentUserId = data.citizen_user_id;
+    if (data.token !== undefined) this.currentToken = data.token;
     if (data.user) {
       this.currentUserData = data.user;
       if (data.user.email) this.currentUserEmail = data.user.email;
       if (data.user.mobile_number || data.user.phone) this.currentUserPhone = data.user.mobile_number || data.user.phone;
       if (data.user.citizen_user_id) this.currentUserId = data.user.citizen_user_id;
+      if (data.user.token && !this.currentToken) this.currentToken = data.user.token;
     }
   }
 
-  static getCurrentUser() {
+  static getCurrentUser(): {
+    isGuest: boolean;
+    email: string | null;
+    phone: string | null;
+    citizen_user_id: number | null;
+    user: any;
+    token: string | null;
+  } {
     const isGuestSession = this.isGuest || (!this.currentUserEmail && !this.currentUserPhone && !this.currentUserId);
     return {
       isGuest: isGuestSession,
@@ -70,6 +87,7 @@ export class AuthService {
       phone: isGuestSession ? null : this.currentUserPhone,
       citizen_user_id: isGuestSession ? null : this.currentUserId,
       user: isGuestSession ? null : this.currentUserData,
+      token: isGuestSession ? null : this.currentToken,
     };
   }
 
@@ -79,6 +97,7 @@ export class AuthService {
     this.currentUserPhone = null;
     this.currentUserId = null;
     this.currentUserData = null;
+    this.currentToken = null;
   }
 
   /**
@@ -180,17 +199,19 @@ export class AuthService {
         const userObj = json.user || json.data?.user || json.data;
         const userEmail = json.email || userObj?.email || identifier;
         const userId = json.citizen_user_id || userObj?.citizen_user_id || userObj?.id;
+        const serverToken = json.token || json.data?.token || json.session?.refresh_token || null;
 
         AuthService.setCurrentUser({
           email: userEmail,
           citizen_user_id: userId,
           user: userObj,
+          token: serverToken,
         });
 
         return {
           status: 'success',
           message: json.message || 'Login successful.',
-          token: json.token || json.data?.token || json.session?.refresh_token,
+          token: serverToken || undefined,
           user: userObj,
           citizen_user_id: userId,
           email: userEmail,
@@ -253,10 +274,12 @@ export class AuthService {
       if (json.status === 'otp_required' || json.status === 'verification_required' || json.verification_required === true || json.status === 'success' || json.success === true) {
         const userId = json.citizen_user_id || json.data?.citizen_user_id;
         const userEmail = json.email || userData.email;
+        const serverToken = json.token || json.data?.token || json.session?.refresh_token || null;
 
         AuthService.setCurrentUser({
           email: userEmail,
           citizen_user_id: userId,
+          token: serverToken,
         });
 
         return {
@@ -308,14 +331,22 @@ export class AuthService {
         const { json } = parseJsonResponse(text);
 
         if (json && (json.status === 'success' || json.success === true)) {
+          const userObj = json.user || json.data?.user;
+          const userEmail = json.email || identifier;
+          const userId = json.citizen_user_id || json.data?.citizen_user_id || userObj?.citizen_user_id || userObj?.id;
+          const serverToken = json.token || json.data?.token || json.session?.refresh_token || json.reset_token || json.data?.reset_token || null;
+
           AuthService.setCurrentUser({
-            email: identifier,
+            email: userEmail,
+            citizen_user_id: userId,
+            user: userObj,
+            token: serverToken,
           });
 
           return {
             status: 'success',
             message: json.message || 'Verification successful.',
-            token: json.token || json.reset_token || json.data?.token || json.data?.reset_token,
+            token: serverToken || undefined,
             data: json.data,
           };
         }
