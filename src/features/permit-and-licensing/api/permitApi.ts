@@ -3,6 +3,8 @@ import { PERMIT_CONFIG } from './permitConfig';
 import { PERMIT_ENDPOINTS } from './permitEndpoints';
 import {
   ApiResponse,
+  ApplicantProfileSetupData,
+  ApplicantProfileSetupResponse,
   PermitApplication,
   PermitSubmitPayload,
   PermitSubmitResult,
@@ -14,13 +16,17 @@ import {
 
 export class PermitApiError extends Error {
   public statusCode?: number;
+  public status?: number;
   public rawResponse?: any;
+  public data?: any;
 
-  constructor(message: string, statusCode?: number, rawResponse?: any) {
+  constructor(message: string, statusCode?: number, rawResponse?: any, data?: any) {
     super(message);
     this.name = 'PermitApiError';
     this.statusCode = statusCode;
+    this.status = statusCode;
     this.rawResponse = rawResponse;
+    this.data = data !== undefined ? data : rawResponse?.data;
   }
 }
 
@@ -109,7 +115,7 @@ async function executeFetch<T>(url: string, options: RequestInit = {}): Promise<
 
     if (!response.ok) {
       const serverMessage = parsed?.message || parsed?.error || `Server responded with status ${response.status}.`;
-      throw new PermitApiError(serverMessage, response.status, parsed);
+      throw new PermitApiError(serverMessage, response.status, parsed, parsed?.data);
     }
 
     // Standardize PHP response format
@@ -203,6 +209,29 @@ export async function submitPermitApplication(payload: PermitSubmitPayload): Pro
   }
 
   return response.data;
+}
+
+/**
+ * Setup first-time applicant profile for authenticated citizen
+ * Sends only the trimmed residential address.
+ */
+export async function setupApplicantProfile(address: string): Promise<ApplicantProfileSetupResponse> {
+  const url = PERMIT_ENDPOINTS.setupApplicantProfile();
+  const trimmedAddress = address.trim();
+
+  const response = await executeFetch<ApplicantProfileSetupData>(url, {
+    method: 'POST',
+    body: JSON.stringify({
+      address: trimmedAddress,
+    }),
+  });
+
+  return {
+    success: response.success,
+    status: response.status,
+    message: response.message,
+    data: response.data,
+  };
 }
 
 /**

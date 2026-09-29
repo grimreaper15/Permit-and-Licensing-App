@@ -93,15 +93,59 @@ export default function ApplyPermitScreen() {
 
   const [selectedType, setSelectedType] = useState('Business Permit');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [residentialAddress, setResidentialAddress] = useState('');
+  const [addressValidationError, setAddressValidationError] = useState<string | null>(null);
 
-  const { formState, updateField, isSubmitting, error, submitResult, submit } =
-    usePermitSubmission();
+  const {
+    formState,
+    updateField,
+    isSubmitting,
+    error,
+    submitResult,
+    submit,
+    profileRequired,
+    isSettingUpProfile,
+    profileSetupError,
+    setupProfileAndRetry,
+    cancelProfileSetup,
+    clearProfileSetupError,
+  } = usePermitSubmission();
 
   const handleSubmit = async () => {
     const result = await submit();
     if (result) {
       setShowSuccessModal(true);
     }
+  };
+
+  const handleSaveAddress = async () => {
+    const trimmed = residentialAddress.trim();
+    if (!trimmed) {
+      setAddressValidationError('Residential address is required.');
+      return;
+    }
+    if (trimmed.length < 5) {
+      setAddressValidationError('Address must be at least 5 characters.');
+      return;
+    }
+    if (trimmed.length > 500) {
+      setAddressValidationError('Address cannot exceed 500 characters.');
+      return;
+    }
+    setAddressValidationError(null);
+
+    const result = await setupProfileAndRetry(trimmed);
+    if (result) {
+      setResidentialAddress('');
+      setShowSuccessModal(true);
+    }
+  };
+
+  const handleCancelAddressModal = () => {
+    setResidentialAddress('');
+    setAddressValidationError(null);
+    clearProfileSetupError();
+    cancelProfileSetup();
   };
 
   const handleNavigateToUpload = () => {
@@ -511,11 +555,17 @@ export default function ApplyPermitScreen() {
 
         {/* Submit Action Button */}
         <TouchableOpacity
-          style={[styles.submitButton, { backgroundColor: colors.accent }]}
+          style={[
+            styles.submitButton,
+            {
+              backgroundColor: colors.accent,
+              opacity: isSubmitting || isSettingUpProfile || profileRequired ? 0.7 : 1,
+            },
+          ]}
           onPress={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isSettingUpProfile || profileRequired}
           activeOpacity={0.85}>
-          {isSubmitting ? (
+          {isSubmitting || isSettingUpProfile ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <>
@@ -525,6 +575,109 @@ export default function ApplyPermitScreen() {
           )}
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Complete Applicant Profile Modal (Phase 2B) */}
+      <Modal
+        visible={profileRequired}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCancelAddressModal}>
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={styles.modalKeyboardAvoid}>
+            <View style={[styles.modalCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={[styles.profileSetupIconCircle, { backgroundColor: isDarkMode ? '#0F2942' : '#F0F9FF' }]}>
+                <IconSymbol name="house.fill" size={32} color={colors.accent} />
+              </View>
+
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                Complete Applicant Profile
+              </Text>
+
+              <Text style={[styles.modalSub, { color: colors.textMuted }]}>
+                Your applicant profile needs a residential address before you can submit a permit.
+              </Text>
+
+              <View style={styles.addressInputContainer}>
+                <Text style={[styles.inputLabel, { color: colors.textPrimary }]}>
+                  Residential Address <Text style={styles.requiredStar}>*</Text>
+                </Text>
+                <TextInput
+                  style={[
+                    styles.addressTextInput,
+                    {
+                      backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC',
+                      borderColor: addressValidationError ? colors.danger : colors.border,
+                      color: colors.textPrimary,
+                    },
+                  ]}
+                  placeholder="Enter your current residential address"
+                  placeholderTextColor={colors.textMuted}
+                  multiline
+                  numberOfLines={3}
+                  value={residentialAddress}
+                  onChangeText={(val) => {
+                    setResidentialAddress(val);
+                    if (addressValidationError) setAddressValidationError(null);
+                    if (profileSetupError) clearProfileSetupError();
+                  }}
+                  editable={!isSettingUpProfile && !isSubmitting}
+                />
+                <Text style={[styles.helperText, { color: colors.textMuted }]}>
+                  Enter your current home/residential address. Do not enter the business address unless it is also your actual residential address.
+                </Text>
+
+                {addressValidationError ? (
+                  <Text style={[styles.validationErrorText, { color: colors.danger }]}>
+                    {addressValidationError}
+                  </Text>
+                ) : null}
+
+                {profileSetupError ? (
+                  <View style={[styles.errorCard, { backgroundColor: colors.dangerLight, marginTop: 4 }]}>
+                    <IconSymbol name="exclamationmark.triangle.fill" size={16} color={colors.danger} />
+                    <Text style={[styles.errorText, { color: colors.danger }]}>{profileSetupError}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={[
+                    styles.primaryActionBtn,
+                    {
+                      backgroundColor: colors.accent,
+                      opacity: isSettingUpProfile || isSubmitting ? 0.7 : 1,
+                    },
+                  ]}
+                  onPress={handleSaveAddress}
+                  disabled={isSettingUpProfile || isSubmitting}
+                  activeOpacity={0.85}>
+                  {isSettingUpProfile ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <IconSymbol name="checkmark.circle.fill" size={16} color="#FFFFFF" />
+                      <Text style={styles.primaryActionBtnText}>Save Address</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.secondaryActionBtn, { borderColor: colors.border }]}
+                  onPress={handleCancelAddressModal}
+                  disabled={isSettingUpProfile || isSubmitting}
+                  activeOpacity={0.8}>
+                  <Text style={[styles.secondaryActionBtnText, { color: colors.textSecondary }]}>
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
 
       {/* Real Application Success Modal */}
       <Modal visible={showSuccessModal} transparent animationType="fade" onRequestClose={() => {}}>
@@ -895,5 +1048,42 @@ const styles = StyleSheet.create({
   tertiaryActionBtnText: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  modalKeyboardAvoid: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileSetupIconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  addressInputContainer: {
+    width: '100%',
+    gap: 6,
+    marginVertical: 4,
+  },
+  addressTextInput: {
+    minHeight: 76,
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    fontWeight: '500',
+    textAlignVertical: 'top',
+  },
+  helperText: {
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  validationErrorText: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
   },
 });

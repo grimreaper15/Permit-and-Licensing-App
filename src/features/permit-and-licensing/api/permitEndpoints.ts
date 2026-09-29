@@ -8,6 +8,8 @@ export const PERMIT_ENDPOINTS = {
   
   submit: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=submit`,
 
+  setupApplicantProfile: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=setup_applicant_profile`,
+
   uploadRequirement: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=upload_requirement`,
 
   track: (applicationNoOrId: string | number) => {

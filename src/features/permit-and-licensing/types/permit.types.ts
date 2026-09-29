@@ -298,3 +298,29 @@ export interface PermitUploadResult {
   screening?: AiScreeningData | null;
 }
 
+// -----------------------------------------------------------------------------
+// Phase 2B: First-Time Applicant Profile Setup Types
+// -----------------------------------------------------------------------------
+
+export interface ApplicantProfileSetupData {
+  profile_required: boolean;
+  [key: string]: any;
+}
+
+export interface ApplicantProfileSetupResponse {
+  success: boolean;
+  status: string;
+  message: string;
+  data: ApplicantProfileSetupData;
+}
+
+export interface ApplicantProfileSetupPayload {
+  address: string;
+}
+
+export interface PermitProfileRequiredErrorData {
+  authenticated?: boolean;
+  profile_required?: boolean;
+  [key: string]: any;
+}
+
