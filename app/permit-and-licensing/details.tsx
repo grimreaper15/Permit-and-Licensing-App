@@ -158,8 +158,37 @@ export default function ApplicationDetailsScreen() {
           <View style={styles.sectionHeaderRow}>
             <IconSymbol name="arrow.up.doc.fill" size={18} color={colors.accent} />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-              Document Requirements ({trackingData?.documents?.length || 0})
+              Document Requirements
             </Text>
+            {trackingData?.requirements_summary ? (
+              <View
+                style={[
+                  styles.headerReqBadge,
+                  {
+                    backgroundColor: trackingData.requirements_summary.is_complete
+                      ? colors.successLight
+                      : colors.warningLight,
+                  },
+                ]}>
+                <Text
+                  style={[
+                    styles.headerReqBadgeText,
+                    {
+                      color: trackingData.requirements_summary.is_complete
+                        ? colors.success
+                        : colors.warning,
+                    },
+                  ]}>
+                  {trackingData.requirements_summary.is_complete
+                    ? 'Complete'
+                    : `${trackingData.requirements_summary.uploaded_required} / ${trackingData.requirements_summary.total_required} Complete`}
+                </Text>
+              </View>
+            ) : (
+              <Text style={[styles.sectionSubCount, { color: colors.textMuted }]}>
+                ({trackingData?.documents?.length || 0})
+              </Text>
+            )}
           </View>
 
           {trackingData?.documents && trackingData.documents.length > 0 ? (
@@ -427,6 +456,20 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
+  },
+  headerReqBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginLeft: 'auto',
+  },
+  headerReqBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  sectionSubCount: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   detailRow: {
     flexDirection: 'row',

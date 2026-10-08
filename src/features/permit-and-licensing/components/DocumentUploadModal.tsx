@@ -12,7 +12,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
 import { useTheme } from '@/src/context/ThemeContext';
 import { PERMIT_COLORS } from '../styles/permit.styles';
-import { AiScreeningData, PermitDocumentSummary, PermitUploadResult } from '../types/permit.types';
+import { AiScreeningData, PermitDocumentSummary, PermitRequirementItem, PermitUploadResult } from '../types/permit.types';
 import { uploadPermitRequirement } from '../api/permitApi';
 import { ScreeningBadge } from './ScreeningBadge';
 
@@ -22,7 +22,7 @@ const OCR_PROCESSING_LIMIT_BYTES = 1 * 1024 * 1024; // 1 MB
 interface DocumentUploadModalProps {
   visible: boolean;
   permitId: number | string;
-  requirement?: PermitDocumentSummary | null;
+  requirement?: PermitDocumentSummary | PermitRequirementItem | null;
   onClose: () => void;
   onUploadSuccess?: (result: PermitUploadResult) => void;
 }
@@ -49,8 +49,14 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [screeningResult, setScreeningResult] = useState<PermitUploadResult | null>(null);
 
-  const requirementName = requirement?.document_name || requirement?.name || 'Requirement Document';
-  const requirementId = requirement?.id ? String(requirement.id) : (requirement?.requirement_id ? String(requirement.requirement_id) : '');
+  const requirementName = (requirement as any)?.document_name || requirement?.name || 'Requirement Document';
+  const requirementId = (requirement as any)?.key
+    ? String((requirement as any).key)
+    : (requirement as any)?.id
+    ? String((requirement as any).id)
+    : (requirement as any)?.requirement_id
+    ? String((requirement as any).requirement_id)
+    : '';
 
   const resetState = () => {
     setSelectedFile(null);

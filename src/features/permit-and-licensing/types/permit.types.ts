@@ -163,6 +163,7 @@ export interface PermitTrackingResponse {
   timeline?: PermitTimelineStage[];
   payment?: PermitPaymentSummary;
   deficiencies?: PermitDeficiency[];
+  requirements_summary?: PermitRequirementsSummary;
   documents?: PermitDocumentSummary[];
   inspection?: PermitInspectionSummary;
   issuance?: PermitIssuance;
@@ -323,4 +324,55 @@ export interface PermitProfileRequiredErrorData {
   profile_required?: boolean;
   [key: string]: any;
 }
+
+// -----------------------------------------------------------------------------
+// Phase 3B: Server-Authoritative Requirements & Screening Types
+// -----------------------------------------------------------------------------
+
+export interface PermitRequirementItem {
+  key: string;
+  name: string;
+  type?: 'standard' | 'lob' | string;
+  rule_badge?: string | null;
+  required: boolean;
+  uploaded: boolean;
+  document_id?: number | null;
+  document_status?: 'Pending' | 'Verified' | 'Rejected' | string | null;
+  file_path?: string | null;
+  uploaded_at?: string | null;
+}
+
+export interface PermitMissingRequirementItem {
+  key: string;
+  name: string;
+}
+
+export interface PermitRequirementsSummary {
+  total_required: number;
+  uploaded_required: number;
+  missing_count: number;
+  is_complete: boolean;
+  items: PermitRequirementItem[];
+  missing: PermitMissingRequirementItem[];
+}
+
+export interface PermitSubmitForScreeningResult {
+  permit_id: number;
+  application_no: string;
+  previous_status: string;
+  current_status: string;
+  is_complete: boolean;
+  message?: string;
+  requirements_summary: PermitRequirementsSummary;
+}
+
+export interface PermitSubmitForScreeningMissingData {
+  is_complete: boolean;
+  total_required: number;
+  uploaded_required: number;
+  missing_count: number;
+  missing: PermitMissingRequirementItem[];
+  requirements_summary?: PermitRequirementsSummary;
+}
+
 

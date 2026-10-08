@@ -12,6 +12,8 @@ export const PERMIT_ENDPOINTS = {
 
   uploadRequirement: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=upload_requirement`,
 
+  submitForScreening: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=submit_for_screening`,
+
   track: (applicationNoOrId: string | number) => {
     const param = typeof applicationNoOrId === 'number' || /^\d+$/.test(String(applicationNoOrId))
       ? `id=${encodeURIComponent(applicationNoOrId)}`

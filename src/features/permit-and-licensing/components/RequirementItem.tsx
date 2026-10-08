@@ -3,34 +3,39 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
 import { useTheme } from '@/src/context/ThemeContext';
 import { PERMIT_COLORS } from '../styles/permit.styles';
-import { PermitDocumentSummary } from '../types/permit.types';
+import { PermitDocumentSummary, PermitRequirementItem } from '../types/permit.types';
 import { ScreeningBadge } from './ScreeningBadge';
 import { StatusBadge } from './StatusBadge';
 
 interface RequirementItemProps {
-  document: PermitDocumentSummary;
-  onUploadOrReplace?: (document: PermitDocumentSummary) => void;
+  document?: PermitDocumentSummary;
+  item?: PermitRequirementItem;
+  onUploadOrReplace?: (target: any) => void;
   isUploading?: boolean;
 }
 
 export const RequirementItem: React.FC<RequirementItemProps> = ({
   document,
+  item,
   onUploadOrReplace,
   isUploading = false,
 }) => {
   const { isDarkMode } = useTheme();
   const colors = isDarkMode ? PERMIT_COLORS.dark : PERMIT_COLORS.light;
 
-  const docName = document.document_name || document.name || 'Permit Requirement';
-  const rawStatus = (document.status || '').toLowerCase().trim();
+  // Determine authoritative values from item if available, otherwise document
+  const docName = item ? item.name : (document?.document_name || document?.name || 'Permit Requirement');
+  const rawStatus = (item ? (item.document_status || '') : (document?.status || '')).toLowerCase().trim();
   const isVerified = rawStatus === 'verified' || rawStatus === 'approved';
   const isRejected = rawStatus === 'rejected';
-  const isUploaded = !!document.uploaded_at || isVerified || rawStatus === 'pending' || document.status === 'Approved' || document.status === 'Pending';
+  const isUploaded = item ? item.uploaded : (!!document?.uploaded_at || isVerified || rawStatus === 'pending' || document?.status === 'Approved' || document?.status === 'Pending');
+  const uploadedAtStr = item?.uploaded_at || document?.uploaded_at;
+  const ruleBadge = item?.rule_badge;
 
   let formattedDate: string | null = null;
-  if (document.uploaded_at) {
+  if (uploadedAtStr) {
     try {
-      const d = new Date(document.uploaded_at);
+      const d = new Date(uploadedAtStr);
       if (!isNaN(d.getTime())) {
         formattedDate = d.toLocaleDateString(undefined, {
           month: 'short',
@@ -39,9 +44,15 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
         });
       }
     } catch {
-      formattedDate = document.uploaded_at;
+      formattedDate = uploadedAtStr;
     }
   }
+
+  const handleAction = () => {
+    if (onUploadOrReplace) {
+      onUploadOrReplace(item || document);
+    }
+  };
 
   return (
     <View
@@ -49,7 +60,11 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
         styles.card,
         {
           backgroundColor: colors.card,
-          borderColor: isRejected ? colors.danger : isVerified ? colors.success : colors.border,
+          borderColor: isRejected
+            ? colors.danger
+            : isUploaded
+            ? (isVerified ? colors.success : colors.border)
+            : colors.danger,
         },
       ]}>
       <View style={styles.topRow}>
@@ -62,10 +77,8 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
                 : isRejected
                 ? colors.dangerLight
                 : isUploaded
-                ? colors.infoLight
-                : isDarkMode
-                ? '#334155'
-                : '#F1F5F9',
+                ? colors.successLight
+                : colors.dangerLight,
             },
           ]}>
           <IconSymbol
@@ -75,8 +88,8 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
                 : isRejected
                 ? 'exclamationmark.triangle.fill'
                 : isUploaded
-                ? 'doc.text.fill'
-                : 'doc.fill'
+                ? 'checkmark.circle.fill'
+                : 'xmark.circle.fill'
             }
             size={18}
             color={
@@ -85,25 +98,44 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
                 : isRejected
                 ? colors.danger
                 : isUploaded
-                ? colors.accent
-                : colors.textMuted
+                ? colors.success
+                : colors.danger
             }
           />
         </View>
         <View style={styles.contentCol}>
-          <Text style={[styles.docName, { color: colors.textPrimary }]}>{docName}</Text>
-          {document.status ? (
-            <View style={styles.statusRow}>
-              <StatusBadge status={document.status} size="small" />
+          <View style={styles.titleRow}>
+            <Text style={[styles.docName, { color: colors.textPrimary }]}>{docName}</Text>
+          </View>
+
+          {ruleBadge ? (
+            <View style={styles.ruleBadgeRow}>
+              <View style={[styles.ruleBadge, { backgroundColor: isDarkMode ? '#1E293B' : '#F1F5F9', borderColor: colors.border }]}>
+                <Text style={[styles.ruleBadgeText, { color: colors.textSecondary }]}>{ruleBadge}</Text>
+              </View>
             </View>
           ) : null}
-          {formattedDate ? (
-            <Text style={[styles.uploadDateText, { color: colors.textMuted }]}>
-              Uploaded: {formattedDate}
-            </Text>
+
+          {/* Status badge if explicit status exists */}
+          {(item?.document_status || document?.status) ? (
+            <View style={styles.statusRow}>
+              <StatusBadge status={item?.document_status || document?.status} size="small" />
+            </View>
+          ) : null}
+
+          {isUploaded ? (
+            formattedDate ? (
+              <Text style={[styles.uploadDateText, { color: colors.textMuted }]}>
+                Uploaded: {formattedDate}
+              </Text>
+            ) : (
+              <Text style={[styles.uploadDateText, { color: colors.success }]}>
+                ✓ Uploaded
+              </Text>
+            )
           ) : (
-            <Text style={[styles.uploadDateText, { color: colors.textMuted }]}>
-              {isUploaded ? 'Document Attached' : 'Not yet submitted'}
+            <Text style={[styles.uploadDateText, { color: colors.danger, fontWeight: '600' }]}>
+              ✕ Missing — Tap to Upload
             </Text>
           )}
         </View>
@@ -120,7 +152,7 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
                   : colors.accent,
               },
             ]}
-            onPress={() => onUploadOrReplace(document)}
+            onPress={handleAction}
             disabled={isUploading}
             activeOpacity={0.8}>
             <IconSymbol
@@ -140,7 +172,7 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
       </View>
 
       {/* Screening Badge or Status */}
-      {isUploaded && document.screening_status ? (
+      {isUploaded && (document?.screening_status) ? (
         <View style={styles.screeningRow}>
           <Text style={[styles.screeningLabel, { color: colors.textSecondary }]}>AI Screening:</Text>
           <ScreeningBadge status={document.screening_status} compact />
@@ -148,7 +180,7 @@ export const RequirementItem: React.FC<RequirementItemProps> = ({
       ) : null}
 
       {/* Rejection Note if marked deficient */}
-      {isRejected && document.rejection_reason ? (
+      {isRejected && (document?.rejection_reason) ? (
         <View style={[styles.rejectionBox, { backgroundColor: colors.dangerLight }]}>
           <IconSymbol name="exclamationmark.triangle.fill" size={13} color={colors.danger} />
           <Text style={[styles.rejectionText, { color: colors.danger }]}>
@@ -184,8 +216,28 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   docName: {
     fontSize: 14,
+    fontWeight: '700',
+  },
+  ruleBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 2,
+  },
+  ruleBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  ruleBadgeText: {
+    fontSize: 10,
     fontWeight: '700',
   },
   uploadDateText: {
@@ -235,3 +287,4 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
+

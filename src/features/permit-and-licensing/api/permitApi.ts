@@ -8,6 +8,7 @@ import {
   PermitApplication,
   PermitSubmitPayload,
   PermitSubmitResult,
+  PermitSubmitForScreeningResult,
   PermitTrackingResponse,
   PermitUploadResult,
   PermitVerificationResult,
@@ -248,6 +249,27 @@ export async function uploadPermitRequirement(formData: FormData): Promise<Permi
   if (!response.data || !response.data.document_id) {
     throw new PermitApiError('Document uploaded, but server did not return document record ID.');
   }
+
+  return response.data;
+}
+
+/**
+ * Submit verified and complete permit application for document screening
+ * Advances permit status to 'Under Review' / Document Screening on the Webhost.
+ */
+export async function submitForScreening(applicationNoOrId: string | number): Promise<PermitSubmitForScreeningResult> {
+  const url = PERMIT_ENDPOINTS.submitForScreening();
+  const payload = typeof applicationNoOrId === 'number' || /^\d+$/.test(String(applicationNoOrId))
+    ? { permit_id: Number(applicationNoOrId), application_no: String(applicationNoOrId) }
+    : { application_no: String(applicationNoOrId) };
+
+  const response = await executeFetch<PermitSubmitForScreeningResult>(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
 
   return response.data;
 }

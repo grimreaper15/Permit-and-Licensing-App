@@ -153,6 +153,45 @@ export default function PermitTrackingScreen() {
                   </Text>
                 </View>
               ) : null}
+
+              {trackingData.requirements_summary ? (
+                <TouchableOpacity
+                  style={[
+                    styles.reqSummaryRow,
+                    {
+                      backgroundColor: isDarkMode ? '#1E293B' : '#F1F5F9',
+                      borderColor: colors.border,
+                    },
+                  ]}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/permit-and-licensing/upload' as any,
+                      params: { application_no: trackingData.application_no },
+                    })
+                  }
+                  activeOpacity={0.8}>
+                  <View style={styles.reqSummaryLeft}>
+                    <IconSymbol
+                      name={trackingData.requirements_summary.is_complete ? 'checkmark.circle.fill' : 'doc.text.fill'}
+                      size={14}
+                      color={trackingData.requirements_summary.is_complete ? colors.success : colors.accent}
+                    />
+                    <Text style={[styles.reqSummaryText, { color: colors.textPrimary }]}>
+                      Requirements:{' '}
+                      <Text
+                        style={{
+                          fontWeight: '700',
+                          color: trackingData.requirements_summary.is_complete ? colors.success : colors.accent,
+                        }}>
+                        {trackingData.requirements_summary.is_complete
+                          ? 'Requirements Complete'
+                          : `${trackingData.requirements_summary.uploaded_required} / ${trackingData.requirements_summary.total_required} Uploaded`}
+                      </Text>
+                    </Text>
+                  </View>
+                  <IconSymbol name="chevron.right" size={12} color={colors.textMuted} />
+                </TouchableOpacity>
+              ) : null}
             </View>
 
             {/* Actionable Deficiencies Banner */}
@@ -363,6 +402,25 @@ const styles = StyleSheet.create({
   businessNameText: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  reqSummaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 8,
+  },
+  reqSummaryLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  reqSummaryText: {
+    fontSize: 12,
   },
   timelineCard: {
     borderRadius: 16,
