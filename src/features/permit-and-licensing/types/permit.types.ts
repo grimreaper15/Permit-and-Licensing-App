@@ -167,6 +167,7 @@ export interface PermitTrackingResponse {
   documents?: PermitDocumentSummary[];
   inspection?: PermitInspectionSummary;
   issuance?: PermitIssuance;
+  declaration?: CitizenDeclarationSummary;
 }
 
 // -----------------------------------------------------------------------------
@@ -246,8 +247,11 @@ export type OwnershipType =
   | 'Corporation'
   | 'Cooperative';
 
+export type ApplicationTransactionType = 'New' | 'Renewal';
+
 export interface PermitSubmitPayload {
   permit_type?: string;
+  application_type?: ApplicationTransactionType;
   business_name: string;
   business_address: string;
   line_of_business?: string;
@@ -256,6 +260,8 @@ export interface PermitSubmitPayload {
   number_of_employees?: number;
   floor_area_sqm?: number;
   ownership_type?: OwnershipType;
+  is_food_handling?: boolean | number;
+  has_hazardous_waste?: boolean | number;
 }
 
 export interface PermitSubmitResult {
@@ -376,3 +382,48 @@ export interface PermitSubmitForScreeningMissingData {
 }
 
 
+
+// -----------------------------------------------------------------------------
+// Phase 4B: Citizen Business Declaration & Correction Types
+// -----------------------------------------------------------------------------
+
+export type CitizenDeclarationStatus =
+  | 'Pending Review'
+  | 'Verified'
+  | 'Needs Correction'
+  | 'Rejected'
+  | string;
+
+export interface CitizenDeclarationFields {
+  application_type: ApplicationTransactionType | string;
+  filing_date?: string;
+  line_of_business: string;
+  capital_investment: number;
+  gross_sales: number;
+  floor_area_sqm: number;
+  number_of_employees: number;
+  ownership_type: OwnershipType | string;
+  is_food_handling: boolean;
+  has_hazardous_waste: boolean;
+}
+
+export interface CitizenDeclarationSummary {
+  status: CitizenDeclarationStatus;
+  review_notes?: string | null;
+  verified_at?: string | null;
+  fields: CitizenDeclarationFields;
+}
+
+export interface PermitCorrectionPayload {
+  application_no?: string;
+  permit_id?: number | string;
+  application_type?: ApplicationTransactionType;
+  line_of_business?: string;
+  capital_investment?: number;
+  gross_sales?: number;
+  number_of_employees?: number;
+  floor_area_sqm?: number;
+  ownership_type?: OwnershipType;
+  is_food_handling?: boolean | number;
+  has_hazardous_waste?: boolean | number;
+}

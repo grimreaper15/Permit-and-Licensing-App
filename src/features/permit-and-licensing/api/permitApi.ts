@@ -8,6 +8,7 @@ import {
   PermitApplication,
   PermitSubmitPayload,
   PermitSubmitResult,
+  PermitCorrectionPayload,
   PermitSubmitForScreeningResult,
   PermitTrackingResponse,
   PermitUploadResult,
@@ -191,6 +192,7 @@ export async function submitPermitApplication(payload: PermitSubmitPayload): Pro
 
   const formData = new FormData();
   formData.append('permit_type', payload.permit_type || 'Business Permit');
+  formData.append('application_type', payload.application_type || 'New');
   formData.append('business_name', payload.business_name.trim());
   formData.append('business_address', payload.business_address.trim());
   formData.append('line_of_business', payload.line_of_business || 'General Trade');
@@ -199,6 +201,8 @@ export async function submitPermitApplication(payload: PermitSubmitPayload): Pro
   formData.append('number_of_employees', String(payload.number_of_employees || 1));
   formData.append('floor_area_sqm', String(payload.floor_area_sqm || 0));
   formData.append('ownership_type', payload.ownership_type || 'Sole Proprietorship');
+  formData.append('is_food_handling', payload.is_food_handling ? '1' : '0');
+  formData.append('has_hazardous_waste', payload.has_hazardous_waste ? '1' : '0');
 
   const response = await executeFetch<PermitSubmitResult>(url, {
     method: 'POST',
@@ -413,3 +417,34 @@ export async function verifyTproPermit(hashOrValue: string): Promise<TproVerific
 }
 
 
+
+/**
+ * Correct and amend citizen business declaration values (Phase 4B)
+ * Sends only allowed citizen declaration fields via POST action=correct_declaration
+ */
+export async function correctDeclaration(payload: PermitCorrectionPayload): Promise<ApiResponse<any>> {
+  const url = PERMIT_ENDPOINTS.correctDeclaration();
+  const bodyPayload: Record<string, any> = {
+    application_no: payload.application_no,
+    permit_id: payload.permit_id,
+    application_type: payload.application_type || 'New',
+    line_of_business: payload.line_of_business || 'General Merchandise',
+    capital_investment: Number(payload.capital_investment || 0),
+    gross_sales: Number(payload.gross_sales || 0),
+    number_of_employees: Number(payload.number_of_employees || 1),
+    floor_area_sqm: Number(payload.floor_area_sqm || 0),
+    ownership_type: payload.ownership_type || 'Sole Proprietorship',
+    is_food_handling: Boolean(payload.is_food_handling),
+    has_hazardous_waste: Boolean(payload.has_hazardous_waste),
+  };
+
+  const response = await executeFetch<any>(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bodyPayload),
+  });
+
+  return response;
+}

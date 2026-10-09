@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { setupApplicantProfile, submitPermitApplication } from '../api/permitApi';
-import { OwnershipType, PermitSubmitPayload, PermitSubmitResult } from '../types/permit.types';
+import { ApplicationTransactionType, OwnershipType, PermitSubmitPayload, PermitSubmitResult } from '../types/permit.types';
 
 export interface PermitFormState {
   permit_type: string;
+  application_type: ApplicationTransactionType;
   business_name: string;
   business_address: string;
   line_of_business: string;
@@ -12,10 +13,13 @@ export interface PermitFormState {
   number_of_employees: string;
   floor_area_sqm: string;
   ownership_type: OwnershipType;
+  is_food_handling: boolean;
+  has_hazardous_waste: boolean;
 }
 
 const INITIAL_FORM_STATE: PermitFormState = {
   permit_type: 'Business Permit',
+  application_type: 'New',
   business_name: '',
   business_address: '',
   line_of_business: 'General Merchandise',
@@ -24,6 +28,8 @@ const INITIAL_FORM_STATE: PermitFormState = {
   number_of_employees: '1',
   floor_area_sqm: '',
   ownership_type: 'Sole Proprietorship',
+  is_food_handling: false,
+  has_hazardous_waste: false,
 };
 
 export function usePermitSubmission() {
@@ -58,6 +64,25 @@ export function usePermitSubmission() {
     if (!formState.line_of_business.trim()) {
       return 'Please enter the Line of Business.';
     }
+    if (formState.application_type !== 'New' && formState.application_type !== 'Renewal') {
+      return 'Please select a valid Application Transaction (New or Renewal).';
+    }
+    const cap = parseFloat(formState.capital_investment || '0');
+    if (isNaN(cap) || cap < 0) {
+      return 'Capital Investment must be a valid non-negative number.';
+    }
+    const gross = parseFloat(formState.gross_sales || '0');
+    if (isNaN(gross) || gross < 0) {
+      return 'Gross Sales must be a valid non-negative number.';
+    }
+    const area = parseFloat(formState.floor_area_sqm || '0');
+    if (isNaN(area) || area < 0) {
+      return 'Floor Area must be a valid non-negative number.';
+    }
+    const emp = parseInt(formState.number_of_employees || '1', 10);
+    if (isNaN(emp) || emp < 1) {
+      return 'Number of Employees must be at least 1.';
+    }
     return null;
   };
 
@@ -81,14 +106,17 @@ export function usePermitSubmission() {
     try {
       const payload: PermitSubmitPayload = {
         permit_type: formState.permit_type,
+        application_type: formState.application_type,
         business_name: formState.business_name.trim(),
         business_address: formState.business_address.trim(),
         line_of_business: formState.line_of_business.trim(),
-        capital_investment: parseFloat(formState.capital_investment) || 0,
-        gross_sales: parseFloat(formState.gross_sales) || 0,
-        number_of_employees: parseInt(formState.number_of_employees, 10) || 1,
-        floor_area_sqm: parseFloat(formState.floor_area_sqm) || 0,
+        capital_investment: Math.max(0, parseFloat(formState.capital_investment || '0') || 0),
+        gross_sales: Math.max(0, parseFloat(formState.gross_sales || '0') || 0),
+        number_of_employees: Math.max(1, parseInt(formState.number_of_employees || '1', 10) || 1),
+        floor_area_sqm: Math.max(0, parseFloat(formState.floor_area_sqm || '0') || 0),
         ownership_type: formState.ownership_type,
+        is_food_handling: Boolean(formState.is_food_handling),
+        has_hazardous_waste: Boolean(formState.has_hazardous_waste),
       };
 
       const result = await submitPermitApplication(payload);

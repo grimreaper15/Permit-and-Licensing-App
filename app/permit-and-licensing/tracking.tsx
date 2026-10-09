@@ -13,6 +13,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
 import { useTheme } from '@/src/context/ThemeContext';
 import {
+  CitizenDeclarationCard,
+  DeclarationCorrectionModal,
   DeficiencyBanner,
   PaymentSummaryCard,
   PERMIT_COLORS,
@@ -29,6 +31,7 @@ export default function PermitTrackingScreen() {
 
   const [inputAppNo, setInputAppNo] = useState(params.application_no || '');
   const [activeTrackingNo, setActiveTrackingNo] = useState(params.application_no || '');
+  const [showCorrectionModal, setShowCorrectionModal] = useState(false);
 
   const { trackingData, isLoading, isRefreshing, error, refresh, trackApplication } =
     usePermitTracking(activeTrackingNo);
@@ -194,6 +197,15 @@ export default function PermitTrackingScreen() {
               ) : null}
             </View>
 
+            {/* Citizen Business Declaration Card (Phase 4B) */}
+            {trackingData.declaration ? (
+              <CitizenDeclarationCard
+                declaration={trackingData.declaration}
+                applicationNo={trackingData.application_no}
+                onPressCorrect={() => setShowCorrectionModal(true)}
+              />
+            ) : null}
+
             {/* Actionable Deficiencies Banner */}
             {trackingData.deficiencies && trackingData.deficiencies.length > 0 ? (
               <DeficiencyBanner deficiencies={trackingData.deficiencies} />
@@ -257,6 +269,18 @@ export default function PermitTrackingScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Declaration Correction Modal (Phase 4B) */}
+      <DeclarationCorrectionModal
+        visible={showCorrectionModal}
+        onClose={() => setShowCorrectionModal(false)}
+        onSuccess={() => {
+          refresh();
+        }}
+        applicationNo={trackingData?.application_no || activeTrackingNo}
+        permitId={trackingData?.permit_id || trackingData?.id}
+        initialFields={trackingData?.declaration?.fields}
+      />
     </View>
   );
 }

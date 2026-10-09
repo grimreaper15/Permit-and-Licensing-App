@@ -8,6 +8,8 @@ export const PERMIT_ENDPOINTS = {
   
   submit: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=submit`,
 
+  correctDeclaration: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=correct_declaration`,
+
   setupApplicantProfile: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=setup_applicant_profile`,
 
   uploadRequirement: () => `${PERMIT_CONFIG.baseUrl}/api/citizen/permit/index.php?action=upload_requirement`,

@@ -18,3 +18,5 @@ export * from './hooks/usePermitTracking';
 export * from './hooks/usePermitSubmission';
 export * from './hooks/usePermitUpload';
 
+export * from './components/CitizenDeclarationCard';
+export * from './components/DeclarationCorrectionModal';

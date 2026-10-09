@@ -287,10 +287,110 @@ export default function ApplyPermitScreen() {
           })}
         </View>
 
-        {/* Section 2: Business & Enterprise Information */}
+        {/* Section 2: Application Transaction (Part E: New vs Renewal) */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            2. Business Information
+            2. Application Transaction
+          </Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
+            Select whether this is a new municipal permit or an annual renewal of an existing business.
+          </Text>
+        </View>
+
+        <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.transactionOptionRow}>
+            <TouchableOpacity
+              style={[
+                styles.transactionOptionCard,
+                {
+                  backgroundColor:
+                    formState.application_type === 'New'
+                      ? (isDarkMode ? '#0369A1' : '#E0F2FE')
+                      : (isDarkMode ? '#0F172A' : '#F8FAFC'),
+                  borderColor:
+                    formState.application_type === 'New' ? colors.accent : colors.border,
+                },
+              ]}
+              onPress={() => updateField('application_type', 'New')}
+              activeOpacity={0.8}>
+              <View style={styles.transactionCardHeader}>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    {
+                      borderColor:
+                        formState.application_type === 'New' ? colors.accent : colors.border,
+                      backgroundColor:
+                        formState.application_type === 'New' ? colors.accent : 'transparent',
+                    },
+                  ]}>
+                  {formState.application_type === 'New' ? <View style={styles.radioInner} /> : null}
+                </View>
+                <Text
+                  style={[
+                    styles.transactionTitle,
+                    {
+                      color:
+                        formState.application_type === 'New' ? colors.accent : colors.textPrimary,
+                    },
+                  ]}>
+                  New Application
+                </Text>
+              </View>
+              <Text style={[styles.transactionSubtitle, { color: colors.textMuted }]}>
+                First-time registration assessed on declared capital investment.
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.transactionOptionCard,
+                {
+                  backgroundColor:
+                    formState.application_type === 'Renewal'
+                      ? (isDarkMode ? '#0369A1' : '#E0F2FE')
+                      : (isDarkMode ? '#0F172A' : '#F8FAFC'),
+                  borderColor:
+                    formState.application_type === 'Renewal' ? colors.accent : colors.border,
+                },
+              ]}
+              onPress={() => updateField('application_type', 'Renewal')}
+              activeOpacity={0.8}>
+              <View style={styles.transactionCardHeader}>
+                <View
+                  style={[
+                    styles.radioCircle,
+                    {
+                      borderColor:
+                        formState.application_type === 'Renewal' ? colors.accent : colors.border,
+                      backgroundColor:
+                        formState.application_type === 'Renewal' ? colors.accent : 'transparent',
+                    },
+                  ]}>
+                  {formState.application_type === 'Renewal' ? <View style={styles.radioInner} /> : null}
+                </View>
+                <Text
+                  style={[
+                    styles.transactionTitle,
+                    {
+                      color:
+                        formState.application_type === 'Renewal' ? colors.accent : colors.textPrimary,
+                    },
+                  ]}>
+                  Renewal
+                </Text>
+              </View>
+              <Text style={[styles.transactionSubtitle, { color: colors.textMuted }]}>
+                Annual license renewal assessed on prior year declared gross sales.
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Section 3: Business Information */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            3. Business Information
           </Text>
           <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
             Enter legal business and registration details.
@@ -433,17 +533,138 @@ export default function ApplyPermitScreen() {
           </View>
         </View>
 
-        {/* Section 3: Operations & Scale */}
+        {/* Section 4: Citizen Business Declarations & Physical Scale */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-            3. Operations & Capital Details
+            4. Business Declarations & Scale
           </Text>
           <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
-            Used by LGU for statutory fee assessment and clearance sizing.
+            Authoritative citizen-declared business parameters for municipal assessment.
           </Text>
         </View>
 
         <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          {/* Part F: Food Handling Declaration */}
+          <View style={styles.declarationQuestionBlock}>
+            <View style={styles.declarationQuestionTextCol}>
+              <Text style={[styles.declarationTitle, { color: colors.textPrimary }]}>
+                Food Handling Establishment
+              </Text>
+              <Text style={[styles.declarationDesc, { color: colors.textMuted }]}>
+                Does your business prepare, process, serve, or handle food?
+              </Text>
+            </View>
+            <View style={styles.booleanToggleRow}>
+              <TouchableOpacity
+                style={[
+                  styles.booleanToggleBtn,
+                  {
+                    backgroundColor: formState.is_food_handling
+                      ? (isDarkMode ? '#0369A1' : '#E0F2FE')
+                      : (isDarkMode ? '#0F172A' : '#F8FAFC'),
+                    borderColor: formState.is_food_handling ? colors.accent : colors.border,
+                  },
+                ]}
+                onPress={() => updateField('is_food_handling', true)}
+                activeOpacity={0.8}>
+                <Text
+                  style={[
+                    styles.booleanToggleText,
+                    {
+                      color: formState.is_food_handling ? colors.accent : colors.textSecondary,
+                      fontWeight: formState.is_food_handling ? '700' : '500',
+                    },
+                  ]}>
+                  Yes
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.booleanToggleBtn,
+                  {
+                    backgroundColor: !formState.is_food_handling
+                      ? (isDarkMode ? '#0369A1' : '#E0F2FE')
+                      : (isDarkMode ? '#0F172A' : '#F8FAFC'),
+                    borderColor: !formState.is_food_handling ? colors.accent : colors.border,
+                  },
+                ]}
+                onPress={() => updateField('is_food_handling', false)}
+                activeOpacity={0.8}>
+                <Text
+                  style={[
+                    styles.booleanToggleText,
+                    {
+                      color: !formState.is_food_handling ? colors.accent : colors.textSecondary,
+                      fontWeight: !formState.is_food_handling ? '700' : '500',
+                    },
+                  ]}>
+                  No
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Part G: Hazardous / Industrial Waste Declaration */}
+          <View style={styles.declarationQuestionBlock}>
+            <View style={styles.declarationQuestionTextCol}>
+              <Text style={[styles.declarationTitle, { color: colors.textPrimary }]}>
+                Hazardous / Industrial Waste
+              </Text>
+              <Text style={[styles.declarationDesc, { color: colors.textMuted }]}>
+                Does your business generate or handle hazardous/industrial waste?
+              </Text>
+            </View>
+            <View style={styles.booleanToggleRow}>
+              <TouchableOpacity
+                style={[
+                  styles.booleanToggleBtn,
+                  {
+                    backgroundColor: formState.has_hazardous_waste
+                      ? (isDarkMode ? '#0369A1' : '#E0F2FE')
+                      : (isDarkMode ? '#0F172A' : '#F8FAFC'),
+                    borderColor: formState.has_hazardous_waste ? colors.accent : colors.border,
+                  },
+                ]}
+                onPress={() => updateField('has_hazardous_waste', true)}
+                activeOpacity={0.8}>
+                <Text
+                  style={[
+                    styles.booleanToggleText,
+                    {
+                      color: formState.has_hazardous_waste ? colors.accent : colors.textSecondary,
+                      fontWeight: formState.has_hazardous_waste ? '700' : '500',
+                    },
+                  ]}>
+                  Yes
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.booleanToggleBtn,
+                  {
+                    backgroundColor: !formState.has_hazardous_waste
+                      ? (isDarkMode ? '#0369A1' : '#E0F2FE')
+                      : (isDarkMode ? '#0F172A' : '#F8FAFC'),
+                    borderColor: !formState.has_hazardous_waste ? colors.accent : colors.border,
+                  },
+                ]}
+                onPress={() => updateField('has_hazardous_waste', false)}
+                activeOpacity={0.8}>
+                <Text
+                  style={[
+                    styles.booleanToggleText,
+                    {
+                      color: !formState.has_hazardous_waste ? colors.accent : colors.textSecondary,
+                      fontWeight: !formState.has_hazardous_waste ? '700' : '500',
+                    },
+                  ]}>
+                  No
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
           <View style={styles.twoColRow}>
             {/* Capital Investment */}
             <View style={[styles.inputGroup, { flex: 1 }]}>
@@ -1085,5 +1306,59 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
+  },
+  transactionOptionRow: {
+    gap: 10,
+  },
+  transactionOptionCard: {
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1.5,
+    gap: 6,
+  },
+  transactionCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  transactionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  transactionSubtitle: {
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  declarationQuestionBlock: {
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    gap: 10,
+  },
+  declarationQuestionTextCol: {
+    gap: 2,
+  },
+  declarationTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  declarationDesc: {
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  booleanToggleRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  booleanToggleBtn: {
+    flex: 1,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  booleanToggleText: {
+    fontSize: 12,
   },
 });
